@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/card";
 import db from "@/db/db";
 import { formatCurrency, formatNumber } from "@/lib/formatters";
-import { AwardIcon } from "lucide-react";
 
 // this data comes straight from our database - check documentation in prisma
 async function getSalesData() {
@@ -15,11 +14,18 @@ async function getSalesData() {
     _count: true,
   });
 
+  //   // //creating a loading spinner
+  //   await wait(2000);
+
   return {
     amount: (data._sum.priceInCents || 0) / 100,
     numberOfSales: data._count,
   };
 }
+// //creating a loading spinner
+// function wait(duration: number) {
+//   return new Promise((resolve) => setTimeout(resolve, duration));
+// }
 
 async function getUserData() {
   const [userCount, orderData] = await Promise.all([

@@ -1,5 +1,8 @@
 import { Nav, NavLink } from "@/components/Nav";
 
+// //This removes caching for all the admin pages
+// export const dynamic = "force-dynamic";
+
 export default function AdminLayout({
   children,
 }: Readonly<{
