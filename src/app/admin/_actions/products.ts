@@ -31,26 +31,26 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     const data = result.data
 
     // create the path where we want the file to save it to:
-    await fs.mkdir("products", { recursive:true })
+    await fs.mkdir("products", { recursive: true })
     const filePath = `products/${crypto.randomUUID()}-${data.file.name}`
     // add/save the file to the actual file path:
     await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
     // --> it converts the file into a Buffer and we can pass the Buffer along to writeFile - essentially we are just taking our file from the state its currently in and converting it into a file that node.js knows how to use
 
-    await fs.mkdir("public/products", { recursive:true })
+    await fs.mkdir("public/products", { recursive: true })
     const imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`
     await fs.writeFile(`public${imagePath}`, Buffer.from(await data.image.arrayBuffer()))
 
-    db.product.create({ data: {
+    await db.product.create({ data: {
         isAvailableForPurchase: false,
         name: data.name,
         description: data.description,
         priceInCents: data.priceInCents,
         //first safe the file to the file system before we actually can safe the path to them inside of the database which we do with await fs. ... further up
         filePath,
-        imagePath
+        imagePath,
     }})
-
+    
     redirect("/admin/products")
 }
 

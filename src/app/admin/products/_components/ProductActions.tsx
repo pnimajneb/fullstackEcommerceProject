@@ -7,7 +7,7 @@ import {
   toggleProductAvailability,
 } from "../../_actions/products";
 
-export function ActiveDropdownToggleItem({
+export function ActiveToggleDropdownItem({
   id,
   isAvailableForPurchase,
 }: {

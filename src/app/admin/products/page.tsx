@@ -19,9 +19,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  ActiveDropdownToggleItem,
+  ActiveToggleDropdownItem,
   DeleteDropdownItem,
-} from "./_components/ProductAction";
+} from "./_components/ProductActions";
 
 export default function AdminProductPage() {
   return (
@@ -94,7 +94,7 @@ async function ProductsTable() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem asChild>
-                    {/* basic ancor tag - linking to an api route - downloading just a file */}
+                    {/* basic anchor tag - linking to an api route - downloading just a file */}
                     <a download href={`/admin/products/${product.id}/download`}>
                       Download
                     </a>
@@ -104,7 +104,7 @@ async function ProductsTable() {
                       Edit
                     </Link>
                   </DropdownMenuItem>
-                  <ActiveDropdownToggleItem
+                  <ActiveToggleDropdownItem
                     id={product.id}
                     isAvailableForPurchase={product.isAvailableForPurchase}
                   />
