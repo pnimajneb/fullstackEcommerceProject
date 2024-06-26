@@ -54,6 +54,55 @@ export async function addProduct(prevState: unknown, formData: FormData) {
     redirect("/admin/products")
 }
 
+const editSchema = addSchema.extend({
+    file: fileSchema.optional(),
+    image: imageSchema.optional()
+})
+
+export async function updateProduct(id: string, prevState: unknown, formData: FormData) {
+    const result = editSchema.safeParse(Object.fromEntries(formData.entries()))
+    if(result.success === false) {
+        return result.error.formErrors.fieldErrors
+    }
+
+    const data = result.data
+    const product = await db.product.findUnique({where: { id }})
+
+    if(product ==  null) return notFound()
+
+    // let's update our product based on all the information
+    // we only want to update the file- and the imagePath if they actually change
+    let filePath = product.filePath
+    if(data.file != null && data.file.size > 0) {
+    //then we want to upload the file which means delete the old file und create a new one:
+    // first: unlink the original file:
+    await fs.unlink(product.filePath)
+    // second: create a path to a new file and save that file:
+    filePath = `products/${crypto.randomUUID()}-${data.file.name}`
+    await fs.writeFile(filePath, Buffer.from(await data.file.arrayBuffer()))
+    }
+    
+    let imagePath = product.imagePath
+    if(data.image != null && data.image.size > 0) {
+    await fs.unlink(`public${product.imagePath}`)
+    imagePath = `/products/${crypto.randomUUID()}-${data.image.name}`
+    await fs.writeFile(`public${imagePath}`, Buffer.from(await data.image.arrayBuffer()))
+    }
+
+    await db.product.update({ 
+        where: { id },
+        data: {
+        name: data.name,
+        description: data.description,
+        priceInCents: data.priceInCents,
+        //first safe the file to the file system before we actually can safe the path to them inside of the database which we do with await fs. ... further up
+        filePath,
+        imagePath,
+    }})
+    
+    redirect("/admin/products")
+}
+
 export async function toggleProductAvailability(id: string, isAvailableForPurchase: boolean) {
     await db.product.update({ where: { id }, data: { isAvailableForPurchase } })
 }
