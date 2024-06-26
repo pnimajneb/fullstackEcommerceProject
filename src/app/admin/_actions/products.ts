@@ -61,4 +61,8 @@ export async function toggleProductAvailability(id: string, isAvailableForPurcha
 export async function deleteProduct(id: string) {
     const product = await db.product.delete( {where: { id }})
     if(product == null) return notFound()
+
+    // deleting the files in the public/products folder structure
+    await fs.unlink(product.filePath)
+    await fs.unlink(`public${product.imagePath}`)
 }

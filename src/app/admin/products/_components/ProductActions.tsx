@@ -6,6 +6,7 @@ import {
   deleteProduct,
   toggleProductAvailability,
 } from "../../_actions/products";
+import { useRouter } from "next/navigation";
 
 export function ActiveToggleDropdownItem({
   id,
@@ -15,6 +16,7 @@ export function ActiveToggleDropdownItem({
   isAvailableForPurchase: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   return (
     <DropdownMenuItem
       disabled={isPending}
@@ -23,6 +25,7 @@ export function ActiveToggleDropdownItem({
         startTransition(async () => {
           //toggleProductAvailability is an action that we created a function for in products.ts
           await toggleProductAvailability(id, !isAvailableForPurchase);
+          router.refresh();
         });
       }}
     >
@@ -39,14 +42,18 @@ export function DeleteDropdownItem({
   disabled: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
   return (
     <DropdownMenuItem
+      variant="destructive"
       disabled={disabled || isPending}
       onClick={() => {
         //async function is doing the toggling of our actual active state
         startTransition(async () => {
           //toggleProductAvailability is an action that we created a function for in products.ts
           await deleteProduct(id);
+          router.refresh();
         });
       }}
     >

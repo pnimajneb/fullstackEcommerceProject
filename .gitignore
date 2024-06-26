@@ -34,3 +34,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# both of the following folders are not going to get uploaded to github because they are just for testing purposes
+/products
+/public/products
