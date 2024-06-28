@@ -4,7 +4,6 @@ import db from "@/db/db";
 import { Product } from "@prisma/client";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { resolve } from "path";
 import { Suspense } from "react";
 // the folder customerFacing is in parentices (Route Group) because I don't want it to change the URL but it allows me to create a new layout for the pages inside it
 function getMostPopularProducts() {
