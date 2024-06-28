@@ -5,6 +5,7 @@ import db from "@/db/db"
 import { z } from "zod"
 import fs from "fs/promises"
 import { notFound, redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 
 //in zod schema there is not a handy way such as .file which is why we need to create our own schema:
 // we need to choose File because the file is an instance of File, if it's not we say Required
@@ -20,9 +21,11 @@ const addSchema = z.object({
     image: imageSchema.refine(file => file.size > 0, "Required")
 })
 
+// if I update, delete, add etc. a product I need to make sure that I revalidate the caches which is why I need to revalidate the paths of most of the functions below
+
 // actions must be async
 // prevState does not matter which is why we put it to unknown
-export async function addProduct(prevState: unknown, formData: FormData) {
+export async function addProduct(prevState: unknown, formData: FormData) {  
     const result = addSchema.safeParse(Object.fromEntries(formData.entries()))
     if(result.success === false) {
         return result.error.formErrors.fieldErrors
@@ -50,6 +53,9 @@ export async function addProduct(prevState: unknown, formData: FormData) {
         filePath,
         imagePath,
     }})
+
+    revalidatePath("/")
+    revalidatePath("/products")
     
     redirect("/admin/products")
 }
@@ -99,12 +105,17 @@ export async function updateProduct(id: string, prevState: unknown, formData: Fo
         filePath,
         imagePath,
     }})
+    revalidatePath("/")
+    revalidatePath("/products")
     
     redirect("/admin/products")
 }
 
 export async function toggleProductAvailability(id: string, isAvailableForPurchase: boolean) {
     await db.product.update({ where: { id }, data: { isAvailableForPurchase } })
+
+    revalidatePath("/")
+    revalidatePath("/products")
 }
 
 export async function deleteProduct(id: string) {
@@ -114,4 +125,7 @@ export async function deleteProduct(id: string) {
     // deleting the files in the public/products folder structure
     await fs.unlink(product.filePath)
     await fs.unlink(`public${product.imagePath}`)
+
+    revalidatePath("/")
+    revalidatePath("/products")
 }
