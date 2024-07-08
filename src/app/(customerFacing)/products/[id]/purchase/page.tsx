@@ -28,9 +28,12 @@ export default async function PurchasePage({
   }
 
   return (
-    <CheckoutForm
-      product={product}
-      clientSecret={paymentIntent.client_secret}
-    />
+    <div>
+      <h1>Here should be displayed the PaymentElements</h1>
+      <CheckoutForm
+        product={product}
+        clientSecret={paymentIntent.client_secret}
+      />
+    </div>
   );
 }
