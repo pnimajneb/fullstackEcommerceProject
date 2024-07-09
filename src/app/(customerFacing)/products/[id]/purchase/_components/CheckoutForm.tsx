@@ -1,5 +1,6 @@
 "use client";
 
+import { userOrderExists } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +13,7 @@ import {
 import { formatCurrency } from "@/lib/formatters";
 import {
   Elements,
+  LinkAuthenticationElement,
   PaymentElement,
   useElements,
   useStripe,
@@ -22,6 +24,7 @@ import { FormEvent, useState } from "react";
 
 type CheckoutFormProps = {
   product: {
+    id: string;
     imagePath: string;
     name: string;
     priceInCents: number;
@@ -62,32 +65,59 @@ export function CheckoutForm({ product, clientSecret }: CheckoutFormProps) {
         </div>
       </div>
       <Elements options={{ clientSecret }} stripe={stripePromise}>
-        <Form priceInCents={product.priceInCents} />
+        <Form priceInCents={product.priceInCents} productId={product.id} />
       </Elements>
     </div>
   );
 }
 
-function Form({ priceInCents }: { priceInCents: number }) {
+function Form({
+  priceInCents,
+  productId,
+}: {
+  priceInCents: number;
+  productId: string;
+}) {
   const stripe = useStripe();
   const elements = useElements();
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string>();
+  const [email, setEmail] = useState<string>();
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    if (stripe == null || elements == null) return;
+    if (stripe == null || elements == null || email == null) return;
 
     setIsLoading(true);
 
     // Check for existing order
+    const orderExists = await userOrderExists(email, productId);
 
-    stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/stripe/purchase-success`,
-      },
-    });
+    if (orderExists) {
+      setErrorMessage(
+        "You have already purchased this product. Try downloading it from the My Orders page"
+      );
+      setIsLoading(false);
+      return;
+    }
+
+    stripe
+      .confirmPayment({
+        elements,
+        confirmParams: {
+          return_url: `${process.env.NEXT_PUBLIC_SERVER_URL}/stripe/purchase-success`,
+        },
+      })
+      .then(({ error }) => {
+        if (error.type === "card_error" || error.type === "validation_error") {
+          setErrorMessage(error.message);
+        } else {
+          setErrorMessage("An unknown error occurred");
+        }
+        //this lets me resubmit the form
+      })
+      .finally(() => setIsLoading(false));
   }
 
   return (
@@ -95,11 +125,20 @@ function Form({ priceInCents }: { priceInCents: number }) {
       <Card>
         <CardHeader>
           <CardTitle>Checkout</CardTitle>
-          <CardDescription className="text-destructive">Error</CardDescription>
+          {errorMessage && (
+            <CardDescription className="text-destructive">
+              {errorMessage}
+            </CardDescription>
+          )}
           <h1>Here should be the payment options displayed</h1>
         </CardHeader>
         <CardContent>
           <PaymentElement />
+          <div className="mt-4">
+            <LinkAuthenticationElement
+              onChange={(e) => setEmail(e.value.email)}
+            />
+          </div>
         </CardContent>
         <CardFooter>
           <Button
