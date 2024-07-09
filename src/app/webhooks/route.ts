@@ -1,0 +1,1 @@
+// this webhook is called by stripe as soon as there is a successful payment --> it is more secure because it is only ever going to be called when there is a successful payment
